@@ -4,7 +4,7 @@ A portfolio site for a Toronto-based fashion & lifestyle creator and short-form
 video editor. Built as a single hand-written HTML file with no framework, no
 build step and no dependencies.
 
-**Live:** https://your-domain.com <!-- update once the domain is connected -->
+**Live:** https://okeyadavid.github.io/ozii-portfolio/
 
 <!-- Add a screenshot: press Cmd+Shift+4 on the hero, save it as
      docs/preview.png, then uncomment the line below.
@@ -100,4 +100,3 @@ Hosted on GitHub Pages, deployed from `main`. Pushing to `main` publishes.
 ---
 
 © Ozii. Code is MIT; photography, video and brand assets are not licensed for reuse.
-# ozii-portfolio
