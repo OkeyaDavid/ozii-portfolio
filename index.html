@@ -1,0 +1,2539 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  OZII — portfolio site
+  ============================================================
+
+  1. ADD A VIDEO TO A WORK ROW
+     Put your clip in the video/ folder, then on that row in the
+     SELECTED WORK section:
+         - add   data-video="video/your-clip.mp4"
+         - delete  data-empty
+     Clicking the row opens the player with sound on.
+     Export vertical (1080x1920), H.264 MP4 + AAC audio, and keep
+     each clip under ~10MB so it starts fast.
+     video/sample.mp4 is a placeholder — delete it when you're done.
+
+  2. ADD A THUMBNAIL TO A ROW
+     Add  data-img="img/your-thumb.jpg"  to show a real image in the
+     preview card that follows the cursor on hover.
+
+  3. YOUR INSTAGRAM LINK
+     Search this file for  YOUR-HANDLE  and replace it (3 places).
+
+  4. TEXT, RATES AND STATS
+     All plain text between the tags — type over it.
+
+  Section order:
+     LIGHTBOX → NAV → HERO → MARQUEE → SELECTED WORK → PROFILE
+     → CLIENT BELT → RATES → CONTACT → FOOTER → SCRIPT
+  ============================================================
+-->
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ozii — Fashion &amp; Lifestyle Creator, Toronto</title>
+  <meta name="description"
+    content="Ozii is a Toronto-based fashion and lifestyle creator and short-form editor. Menswear storytelling and retention-first video for TikTok and Instagram.">
+  <meta property="og:title" content="Ozii — Fashion &amp; Lifestyle Creator, Toronto">
+  <meta property="og:description" content="Menswear storytelling and retention-first short-form video. Toronto.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,700;1,6..96,400;1,6..96,500&family=Archivo:wdth,wght@62..125,300..900&family=DM+Mono:wght@300;400;500&display=swap">
+  <style>
+    /* ================================================================
+   OZII — kinetic portfolio
+   Ground: lifted-black with a green cast. Light: bone.
+   Signal: sodium. One section flips to full bone for contrast whiplash.
+   ================================================================ */
+    :root {
+      --ink: #0C0F0E;
+      --ink-2: #141816;
+      --ink-3: #1C221F;
+      --bone: #F2EDE4;
+      --bone-2: #E4DED2;
+      --bone-dim: #C3BFB6;
+      --ash: #868D85;
+      --ash-dim: #565C55;
+      --line: rgba(242, 237, 228, .13);
+      --line-soft: rgba(242, 237, 228, .07);
+      --sodium: #F2833A;
+      --sodium-deep: #C6642A;
+
+      --serif: "Bodoni Moda", Didot, "Times New Roman", serif;
+      --sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
+      --mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+      --pad: clamp(1.15rem, 4vw, 4.5rem);
+      --maxw: 1560px;
+      --ease: cubic-bezier(.22, 1, .36, 1);
+    }
+
+    @media(min-width:1500px) {
+      :root {
+        --pad: 6rem
+      }
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%
+    }
+
+    body {
+      background: var(--ink);
+      color: var(--bone);
+      font-family: var(--sans);
+      font-weight: 300;
+      font-size: clamp(.95rem, .92rem + .2vw, 1.08rem);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body.is-locked {
+      overflow: hidden
+    }
+
+    img,
+    video {
+      display: block;
+      max-width: 100%
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: 0;
+      cursor: pointer
+    }
+
+    ::selection {
+      background: var(--sodium);
+      color: var(--ink)
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--sodium);
+      outline-offset: 4px
+    }
+
+    .wrap {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding-inline: var(--pad)
+    }
+
+    .mono {
+      font-family: var(--mono);
+      font-weight: 400;
+      font-size: .66rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--ash);
+      font-variant-numeric: tabular-nums
+    }
+
+    /* kinetic display face: Archivo pushed heavy + condensed */
+    .kinetic {
+      font-family: var(--sans);
+      font-weight: 900;
+      font-variation-settings: "wdth" 78, "wght" 900;
+      text-transform: uppercase;
+      line-height: .84;
+      letter-spacing: -.015em;
+    }
+
+    /* ---------------- film grain ---------------- */
+    #grain {
+      position: fixed;
+      inset: -120px;
+      z-index: 90;
+      pointer-events: none;
+      opacity: .045;
+      mix-blend-mode: overlay;
+    }
+
+    /* ---------------- loader ---------------- */
+    #loader {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      background: var(--ink);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: var(--pad);
+      transition: transform 1.05s var(--ease);
+    }
+
+    #loader.is-done {
+      transform: translateY(-100%)
+    }
+
+    #loader .lt {
+      font-family: var(--serif);
+      font-size: clamp(2.5rem, 9vw, 7rem);
+      line-height: 1;
+      color: var(--bone)
+    }
+
+    #loader .lc {
+      font-family: var(--mono);
+      font-size: clamp(2.5rem, 9vw, 7rem);
+      color: var(--sodium);
+      font-variant-numeric: tabular-nums;
+      line-height: 1
+    }
+
+    #loaderBar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 2px;
+      width: 0;
+      background: var(--sodium);
+      z-index: 121;
+      transition: width .2s linear
+    }
+
+    #loaderBar.is-done {
+      opacity: 0;
+      transition: opacity .4s ease .6s
+    }
+
+    /* ---------------- custom cursor ---------------- */
+    #cur,
+    #curRing {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+      pointer-events: none;
+      border-radius: 50%;
+      will-change: transform;
+    }
+
+    #cur {
+      width: 6px;
+      height: 6px;
+      background: var(--sodium);
+      margin: -3px 0 0 -3px
+    }
+
+    #curRing {
+      width: 38px;
+      height: 38px;
+      margin: -19px 0 0 -19px;
+      border: 1px solid rgba(242, 237, 228, .45);
+      display: grid;
+      place-items: center;
+      transition: width .35s var(--ease), height .35s var(--ease), margin .35s var(--ease), background .35s var(--ease), border-color .35s var(--ease);
+    }
+
+    #curRing span {
+      font-family: var(--mono);
+      font-size: .58rem;
+      letter-spacing: .14em;
+      color: var(--ink);
+      opacity: 0;
+      transition: opacity .25s ease;
+      text-transform: uppercase;
+    }
+
+    body.cur-lg #curRing {
+      width: 92px;
+      height: 92px;
+      margin: -46px 0 0 -46px;
+      background: var(--sodium);
+      border-color: var(--sodium)
+    }
+
+    body.cur-lg #curRing span {
+      opacity: 1
+    }
+
+    body.cur-lg #cur {
+      opacity: 0
+    }
+
+    body.on-light #curRing {
+      border-color: rgba(12, 15, 14, .42)
+    }
+
+    body.on-light #cur {
+      background: var(--sodium-deep)
+    }
+
+    body.on-light.cur-lg #curRing {
+      background: var(--ink);
+      border-color: var(--ink)
+    }
+
+    body.on-light.cur-lg #curRing span {
+      color: var(--bone)
+    }
+
+    @media(hover:none), (pointer:coarse) {
+
+      #cur,
+      #curRing {
+        display: none
+      }
+    }
+
+    /* ---------------- nav ---------------- */
+    .nav {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem var(--pad);
+      transition: background .5s ease, backdrop-filter .5s ease, border-color .5s ease;
+      border-bottom: 1px solid transparent;
+    }
+
+    .nav.is-stuck {
+      background: rgba(12, 15, 14, .82);
+      backdrop-filter: blur(16px) saturate(1.3);
+      -webkit-backdrop-filter: blur(16px) saturate(1.3);
+      border-bottom-color: var(--line-soft)
+    }
+
+    .nav__mark {
+      font-family: var(--serif);
+      font-weight: 700;
+      font-size: 1.2rem;
+      letter-spacing: .3em;
+      padding-left: .3em
+    }
+
+    .nav__set {
+      display: flex;
+      gap: clamp(.9rem, 2vw, 2rem);
+      align-items: center
+    }
+
+    .nav__set a {
+      font-family: var(--mono);
+      font-size: .64rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--ash);
+      overflow: hidden;
+      position: relative;
+      height: 1.1em;
+      display: block
+    }
+
+    .nav__set a s {
+      display: block;
+      text-decoration: none;
+      transition: transform .45s var(--ease)
+    }
+
+    .nav__set a s+s {
+      position: absolute;
+      inset: 0;
+      color: var(--sodium)
+    }
+
+    .nav__set a:hover s {
+      transform: translateY(-100%)
+    }
+
+    .nav__cta {
+      color: var(--sodium) !important
+    }
+
+    @media(max-width:680px) {
+      .nav__set a:not(.nav__cta) {
+        display: none
+      }
+    }
+
+    /* ================================================================
+   HERO
+   ================================================================ */
+    .hero {
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      padding-block: clamp(6rem, 14vh, 9rem) clamp(3rem, 7vh, 5rem);
+      overflow: hidden
+    }
+
+    .hero__top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-bottom: clamp(1rem, 2.5vh, 2rem)
+    }
+
+    .rec {
+      display: flex;
+      align-items: center;
+      gap: .6rem
+    }
+
+    .rec i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--sodium);
+      animation: blink 2.4s steps(1, end) infinite
+    }
+
+    @keyframes blink {
+
+      0%,
+      62% {
+        opacity: 1
+      }
+
+      63%,
+      100% {
+        opacity: .2
+      }
+    }
+
+    /* the wordmark: each letter masked, plus a scroll-driven drift */
+    .mark {
+      position: relative
+    }
+
+    .mark h1 {
+      font-family: var(--sans);
+      font-weight: 900;
+      font-variation-settings: "wdth" 70, "wght" 900;
+      font-size: clamp(5.5rem, 26.5vw, 25rem);
+      line-height: .78;
+      letter-spacing: -.045em;
+      text-transform: uppercase;
+      display: flex;
+      white-space: nowrap;
+    }
+
+    .mark h1 .ch {
+      display: block;
+      overflow: hidden
+    }
+
+    .mark h1 .ch b {
+      display: block;
+      font-weight: inherit;
+      will-change: transform
+    }
+
+    .mark__sub {
+      display: block;
+      text-align: right;
+      margin-bottom: .35rem;
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      font-size: clamp(1rem, 2.2vw, 1.9rem);
+      color: var(--sodium);
+    }
+
+    .hero__foot {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+      gap: clamp(1.5rem, 4vw, 4rem);
+      align-items: start;
+      margin-top: clamp(1.6rem, 4vh, 2.8rem);
+      padding-top: clamp(1.2rem, 3vh, 2rem);
+      border-top: 1px solid var(--line)
+    }
+
+    @media(max-width:820px) {
+      .hero__foot {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .hero__claim {
+      font-size: clamp(1.02rem, .95rem + .45vw, 1.32rem);
+      line-height: 1.45;
+      color: var(--bone-dim);
+      max-width: 44ch
+    }
+
+    .hero__claim b {
+      color: var(--bone);
+      font-weight: 500
+    }
+
+    .hero__nums {
+      display: flex;
+      gap: clamp(1.4rem, 3.4vw, 3rem);
+      flex-wrap: wrap;
+      justify-content: flex-end
+    }
+
+    @media(max-width:820px) {
+      .hero__nums {
+        justify-content: flex-start
+      }
+    }
+
+    .hero__num b {
+      display: block;
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: clamp(1.7rem, 1.2rem + 1.5vw, 2.7rem);
+      line-height: 1;
+      font-variant-numeric: tabular-nums
+    }
+
+    .hero__num span {
+      display: block;
+      margin-top: .4rem
+    }
+
+    /* ---------------- velocity marquee ---------------- */
+    .vband {
+      border-block: 1px solid var(--line);
+      background: var(--ink-2);
+      overflow: hidden;
+      padding-block: clamp(.7rem, 1.6vw, 1.15rem)
+    }
+
+    .vband__row {
+      display: flex;
+      width: max-content;
+      will-change: transform
+    }
+
+    .vband__row>span {
+      display: flex;
+      align-items: center;
+      gap: clamp(1.2rem, 3vw, 2.6rem);
+      padding-right: clamp(1.2rem, 3vw, 2.6rem);
+      white-space: nowrap;
+    }
+
+    .vband em {
+      font-style: normal;
+      font-family: var(--sans);
+      font-weight: 900;
+      font-variation-settings: "wdth" 76, "wght" 900;
+      text-transform: uppercase;
+      font-size: clamp(1.5rem, 4.4vw, 3.4rem);
+      line-height: 1;
+      color: var(--bone)
+    }
+
+    .vband i {
+      width: clamp(9px, 1.5vw, 15px);
+      height: clamp(9px, 1.5vw, 15px);
+      border-radius: 50%;
+      background: var(--sodium);
+      flex: none
+    }
+
+    .vband em.hollow {
+      color: transparent;
+      -webkit-text-stroke: 1px var(--ash);
+    }
+
+    /* ================================================================
+   SELECTS — hover-reveal index
+   ================================================================ */
+    .sechead {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 1px solid var(--line-soft);
+      margin-bottom: clamp(1.5rem, 3vw, 2.5rem)
+    }
+
+    .sechead .n {
+      font-family: var(--mono);
+      font-size: .64rem;
+      letter-spacing: .16em;
+      color: var(--sodium);
+      flex: none
+    }
+
+    .sechead h2 {
+      font-family: var(--mono);
+      font-size: .64rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--ash);
+      font-weight: 400
+    }
+
+    .sechead .m {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: .6rem;
+      letter-spacing: .14em;
+      color: var(--ash-dim)
+    }
+
+    @media(max-width:600px) {
+      .sechead .m {
+        display: none
+      }
+    }
+
+    .section {
+      padding-block: clamp(4.5rem, 10vw, 9rem);
+      position: relative
+    }
+
+    .index {
+      border-top: 1px solid var(--line-soft)
+    }
+
+    .row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding-block: clamp(1.05rem, 2.4vw, 1.9rem);
+      border-bottom: 1px solid var(--line-soft);
+      overflow: hidden;
+    }
+
+    .row__fill {
+      position: absolute;
+      inset: 0;
+      background: var(--sodium);
+      transform: translateY(101%);
+      transition: transform .55s var(--ease);
+      z-index: 0
+    }
+
+    .row:hover .row__fill {
+      transform: translateY(0)
+    }
+
+    .row__no {
+      font-family: var(--mono);
+      font-size: .62rem;
+      letter-spacing: .14em;
+      color: var(--ash-dim);
+      width: 2.4rem;
+      flex: none;
+      position: relative;
+      z-index: 1;
+      transition: color .4s ease
+    }
+
+    .row__name {
+      position: relative;
+      z-index: 1;
+      flex: 1 1 auto;
+      min-width: 0;
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: clamp(1.55rem, 1rem + 3.1vw, 4.1rem);
+      line-height: 1.02;
+      transition: color .4s ease, transform .55s var(--ease);
+    }
+
+    .row__kind {
+      position: relative;
+      z-index: 1;
+      font-family: var(--mono);
+      font-size: .6rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--ash);
+      text-align: right;
+      flex: none;
+      transition: color .4s ease
+    }
+
+    .row__yr {
+      position: relative;
+      z-index: 1;
+      font-family: var(--mono);
+      font-size: .6rem;
+      color: var(--ash-dim);
+      width: 3rem;
+      text-align: right;
+      flex: none;
+      transition: color .4s ease
+    }
+
+    @media(max-width:720px) {
+      .row__kind {
+        display: none
+      }
+    }
+
+    .row:hover .row__name {
+      color: var(--ink);
+      transform: translateX(clamp(.5rem, 1.6vw, 1.6rem))
+    }
+
+    .row:hover .row__no,
+    .row:hover .row__kind,
+    .row:hover .row__yr {
+      color: rgba(12, 15, 14, .72)
+    }
+
+    /* the floating preview that chases the cursor */
+    #peek {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 70;
+      pointer-events: none;
+      width: clamp(200px, 19vw, 300px);
+      aspect-ratio: 9/13;
+      margin: -1px 0 0 -1px;
+      opacity: 0;
+      transform: translate3d(-9999px, -9999px, 0) scale(.9) rotate(-4deg);
+      transition: opacity .4s ease, scale .5s var(--ease);
+      overflow: hidden;
+      background: var(--ink-2);
+      box-shadow: 0 26px 70px rgba(0, 0, 0, .55);
+    }
+
+    #peek.is-on {
+      opacity: 1
+    }
+
+    #peek .pk {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity .35s ease
+    }
+
+    #peek .pk.is-on {
+      opacity: 1
+    }
+
+    #peek .pk img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    #peek .pk .plate {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(90% 60% at 50% 0%, rgba(242, 131, 58, .22), transparent 70%),
+        linear-gradient(155deg, #2A231E, #121614);
+      box-shadow: inset 0 0 0 1px rgba(242, 237, 228, .1);
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 5.5rem;
+      color: rgba(242, 131, 58, .34);
+    }
+
+    @media(hover:none), (pointer:coarse) {
+      #peek {
+        display: none
+      }
+    }
+
+    /* touch fallback: a real grid instead of the hover index */
+    .gridfall {
+      display: none;
+      grid-template-columns: repeat(2, 1fr);
+      gap: .7rem;
+      margin-top: 1.5rem
+    }
+
+    .gridfall a {
+      position: relative;
+      aspect-ratio: 9/14;
+      background: var(--ink-2);
+      border: 1px solid var(--line-soft);
+      overflow: hidden;
+      display: block
+    }
+
+    .gridfall img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .gridfall .plate {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(90% 60% at 50% 0%, rgba(242, 131, 58, .2), transparent 70%), linear-gradient(155deg, #2A231E, #121614);
+      font-family: var(--serif);
+      font-size: 3rem;
+      color: rgba(242, 131, 58, .32)
+    }
+
+    .gridfall b {
+      position: absolute;
+      left: .6rem;
+      right: .6rem;
+      bottom: .6rem;
+      z-index: 2;
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: .95rem;
+      line-height: 1.15
+    }
+
+    @media(hover:none), (pointer:coarse) {
+      .index {
+        display: none
+      }
+
+      .gridfall {
+        display: grid
+      }
+    }
+
+    /* ================================================================
+   PROFILE
+   ================================================================ */
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+      gap: clamp(2rem, 5vw, 5rem);
+      align-items: start
+    }
+
+    @media(max-width:880px) {
+      .split {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .pfig {
+      position: relative;
+      overflow: hidden
+    }
+
+    .pfig img {
+      width: 100%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      filter: saturate(.85) contrast(1.05) brightness(.92);
+      will-change: transform;
+      scale: 1.12
+    }
+
+    .big {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: clamp(1.85rem, 1.1rem + 3.1vw, 4rem);
+      line-height: 1.05;
+      text-wrap: balance;
+      margin-bottom: clamp(1.3rem, 3vw, 2rem);
+    }
+
+    .big em {
+      font-style: italic;
+      color: var(--sodium)
+    }
+
+    .big .ln {
+      display: block;
+      overflow: hidden
+    }
+
+    .big .ln>span {
+      display: block;
+      will-change: transform
+    }
+
+    .prose {
+      max-width: 60ch;
+      color: var(--bone-dim)
+    }
+
+    .prose p+p {
+      margin-top: 1em
+    }
+
+    .caps {
+      margin-top: clamp(1.8rem, 4vw, 2.8rem);
+      border-top: 1px solid var(--line-soft)
+    }
+
+    .capr {
+      display: grid;
+      grid-template-columns: 2.6rem 1fr;
+      gap: 1rem;
+      padding-block: 1rem;
+      border-bottom: 1px solid var(--line-soft);
+      align-items: baseline;
+      transition: padding-left .4s var(--ease)
+    }
+
+    .capr:hover {
+      padding-left: .6rem
+    }
+
+    .capr b {
+      font-weight: 500;
+      color: var(--bone);
+      display: block;
+      font-size: 1rem
+    }
+
+    .capr p {
+      margin-top: .2rem;
+      color: var(--ash);
+      font-size: .88rem;
+      line-height: 1.5;
+      max-width: 56ch
+    }
+
+    .numbers {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--line-soft);
+      margin-top: clamp(2.2rem, 5vw, 3.6rem)
+    }
+
+    @media(max-width:700px) {
+      .numbers {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+
+    .num {
+      padding: clamp(1.1rem, 2.4vw, 1.9rem);
+      border-right: 1px solid var(--line-soft);
+      transition: background .45s ease
+    }
+
+    .num:hover {
+      background: var(--ink-2)
+    }
+
+    .num:last-child {
+      border-right: 0
+    }
+
+    @media(max-width:700px) {
+      .num:nth-child(2n) {
+        border-right: 0
+      }
+
+      .num:nth-child(-n+2) {
+        border-bottom: 1px solid var(--line-soft)
+      }
+    }
+
+    .num b {
+      display: block;
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: clamp(1.9rem, 1.3rem + 2vw, 3.2rem);
+      line-height: 1;
+      font-variant-numeric: tabular-nums
+    }
+
+    .num span {
+      display: block;
+      margin-top: .5rem
+    }
+
+    /* ---------------- client belt ---------------- */
+    .belt {
+      border-block: 1px solid var(--line-soft);
+      overflow: hidden;
+      padding-block: clamp(1.4rem, 3vw, 2.2rem);
+      background: var(--ink-2)
+    }
+
+    .belt__row {
+      display: flex;
+      width: max-content;
+      will-change: transform
+    }
+
+    .belt__row>span {
+      display: flex;
+      align-items: center;
+      gap: clamp(1.6rem, 4vw, 3.4rem);
+      padding-right: clamp(1.6rem, 4vw, 3.4rem)
+    }
+
+    .belt img {
+      width: clamp(58px, 7vw, 80px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      object-fit: cover;
+      filter: grayscale(.65) brightness(.93);
+      transition: filter .45s ease;
+      box-shadow: 0 0 0 1px var(--line-soft)
+    }
+
+    .belt img:hover {
+      filter: none
+    }
+
+    .sa {
+      width: clamp(58px, 7vw, 80px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: #fff;
+      flex: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.1;
+      filter: grayscale(.65) brightness(.93);
+      transition: filter .45s ease;
+      box-shadow: 0 0 0 1px var(--line-soft);
+    }
+
+    .sa:hover {
+      filter: none
+    }
+
+    .sa u {
+      font-weight: 700;
+      text-decoration: none;
+      font-size: .4rem;
+      letter-spacing: .05em;
+      color: #E4002B
+    }
+
+    .sa i {
+      display: block;
+      width: 44%;
+      height: 1px;
+      background: #E4002B;
+      margin: .14rem 0
+    }
+
+    .sa s {
+      text-decoration: none;
+      font-size: .31rem;
+      letter-spacing: .1em;
+      color: #55555A
+    }
+
+    /* ================================================================
+   RATES — the light flip
+   ================================================================ */
+    .light {
+      background: var(--bone);
+      color: var(--ink)
+    }
+
+    .light .sechead {
+      border-bottom-color: rgba(12, 15, 14, .14)
+    }
+
+    .light .sechead h2 {
+      color: rgba(12, 15, 14, .55)
+    }
+
+    .light .sechead .m {
+      color: rgba(12, 15, 14, .4)
+    }
+
+    .light .sechead .n {
+      color: var(--sodium-deep)
+    }
+
+    .plans {
+      display: grid;
+      gap: 0;
+      border-top: 1px solid rgba(12, 15, 14, .16)
+    }
+
+    .plan {
+      position: relative;
+      display: grid;
+      grid-template-columns: 2.6rem minmax(0, 1fr) auto;
+      gap: clamp(1rem, 2.4vw, 2.4rem);
+      align-items: start;
+      padding-block: clamp(1.3rem, 2.8vw, 2.1rem);
+      border-bottom: 1px solid rgba(12, 15, 14, .16);
+      transition: padding-left .5s var(--ease);
+    }
+
+    .plan:hover {
+      padding-left: clamp(.5rem, 1.4vw, 1.4rem)
+    }
+
+    .plan__no {
+      font-family: var(--mono);
+      font-size: .62rem;
+      letter-spacing: .14em;
+      color: rgba(12, 15, 14, .42);
+      padding-top: .55rem
+    }
+
+    .plan__name {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: clamp(1.35rem, 1rem + 1.7vw, 2.4rem);
+      line-height: 1.05
+    }
+
+    .plan__flag {
+      display: inline-block;
+      margin-left: .7rem;
+      font-family: var(--mono);
+      font-size: .52rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #fff;
+      background: var(--sodium-deep);
+      padding: .2rem .45rem;
+      vertical-align: middle
+    }
+
+    .plan__list {
+      margin-top: .7rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem .9rem;
+      max-width: 62ch
+    }
+
+    .plan__list li {
+      list-style: none;
+      font-size: .87rem;
+      color: rgba(12, 15, 14, .66);
+      position: relative;
+      padding-left: .85rem
+    }
+
+    .plan__list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: .62em;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--sodium-deep)
+    }
+
+    .plan__price {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: clamp(1.3rem, 1rem + 1.4vw, 2.2rem);
+      line-height: 1;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+      padding-top: .15rem
+    }
+
+    @media(max-width:640px) {
+      .plan {
+        grid-template-columns: 1fr auto;
+        gap: .8rem
+      }
+
+      .plan__no {
+        display: none
+      }
+    }
+
+    .light .foot2 {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 1.8rem;
+      align-items: center;
+      margin-top: clamp(1.4rem, 3vw, 2.2rem)
+    }
+
+    .pill {
+      font-family: var(--mono);
+      font-size: .64rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      border: 1px solid var(--ink);
+      padding: .75rem 1.3rem;
+      display: inline-block;
+      transition: background .4s var(--ease), color .4s var(--ease);
+    }
+
+    .pill:hover {
+      background: var(--ink);
+      color: var(--bone)
+    }
+
+    .light .note {
+      font-family: var(--mono);
+      font-size: .6rem;
+      letter-spacing: .12em;
+      color: rgba(12, 15, 14, .45)
+    }
+
+    /* ================================================================
+   CONTACT
+   ================================================================ */
+    .shout {
+      font-family: var(--sans);
+      font-weight: 900;
+      font-variation-settings: "wdth" 72, "wght" 900;
+      text-transform: uppercase;
+      line-height: .86;
+      letter-spacing: -.025em;
+      font-size: clamp(3rem, 13vw, 11.5rem);
+    }
+
+    .shout .ln {
+      display: block;
+      overflow: hidden
+    }
+
+    .shout .ln>span {
+      display: block;
+      will-change: transform
+    }
+
+    .shout .out {
+      color: transparent;
+      -webkit-text-stroke: 1px var(--ash)
+    }
+
+    .cgrid {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      gap: clamp(2rem, 5vw, 4.5rem);
+      margin-top: clamp(2rem, 5vw, 3.5rem);
+      align-items: start
+    }
+
+    @media(max-width:880px) {
+      .cgrid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .direct a,
+    .direct p {
+      display: flex;
+      gap: 1rem;
+      align-items: baseline;
+      padding-block: .85rem;
+      border-bottom: 1px solid var(--line-soft);
+      transition: color .35s ease, padding-left .4s var(--ease)
+    }
+
+    .direct a:hover {
+      color: var(--sodium);
+      padding-left: .4rem
+    }
+
+    .direct .k {
+      font-family: var(--mono);
+      font-size: .58rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--ash-dim);
+      width: 4.6rem;
+      flex: none
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem
+    }
+
+    .f {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem
+    }
+
+    .f label {
+      font-family: var(--mono);
+      font-size: .58rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--ash)
+    }
+
+    .f input,
+    .f textarea,
+    .f select {
+      font-family: var(--sans);
+      font-size: .95rem;
+      font-weight: 300;
+      color: var(--bone);
+      background: var(--ink-2);
+      border: 1px solid var(--line-soft);
+      padding: .8rem .9rem;
+      width: 100%;
+      transition: border-color .35s ease, background .35s ease;
+    }
+
+    .f textarea {
+      min-height: 112px;
+      resize: vertical
+    }
+
+    .f input:focus,
+    .f textarea:focus,
+    .f select:focus {
+      outline: none;
+      border-color: var(--sodium);
+      background: var(--ink-3)
+    }
+
+    .f input::placeholder,
+    .f textarea::placeholder {
+      color: var(--ash-dim)
+    }
+
+    .f select {
+      appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, var(--ash) 50%), linear-gradient(135deg, var(--ash) 50%, transparent 50%);
+      background-position: calc(100% - 18px) calc(50% + 2px), calc(100% - 13px) calc(50% + 2px);
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat
+    }
+
+    .r2 {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr 1fr
+    }
+
+    @media(max-width:520px) {
+      .r2 {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .magnet {
+      position: relative;
+      align-self: flex-start;
+      will-change: transform
+    }
+
+    .magnet button {
+      font-family: var(--mono);
+      font-size: .66rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      background: var(--sodium);
+      color: var(--ink);
+      padding: 1rem 1.8rem;
+      border: 1px solid var(--sodium);
+      transition: background .35s ease, color .35s ease;
+      display: block;
+    }
+
+    .magnet:hover button {
+      background: transparent;
+      color: var(--sodium)
+    }
+
+    .fnote {
+      font-family: var(--mono);
+      font-size: .56rem;
+      letter-spacing: .1em;
+      color: var(--ash-dim);
+      line-height: 1.7
+    }
+
+    .foot {
+      border-top: 1px solid var(--line-soft);
+      padding-block: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem 1.6rem;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .foot__s {
+      display: flex;
+      gap: 1.3rem
+    }
+
+
+    /* ================================================================
+   WORK LIGHTBOX — click a row, watch the cut with sound
+   ================================================================ */
+    #lb {
+      position: fixed;
+      inset: 0;
+      z-index: 110;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(.9rem, 3vw, 2.4rem);
+      background: rgba(8, 10, 9, .93);
+      backdrop-filter: blur(22px) saturate(1.2);
+      -webkit-backdrop-filter: blur(22px) saturate(1.2);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .45s var(--ease), visibility 0s .45s;
+    }
+
+    #lb.is-open {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity .45s var(--ease), visibility 0s
+    }
+
+    .lb__stage {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .9rem;
+      max-width: 100%;
+      max-height: 100%;
+      z-index: 1;
+      transform: translateY(26px) scale(.97);
+      opacity: 0;
+      transition: transform .6s var(--ease), opacity .5s var(--ease);
+    }
+
+    #lb.is-open .lb__stage {
+      transform: none;
+      opacity: 1
+    }
+
+    .lb__frame {
+      position: relative;
+      background: #000;
+      overflow: hidden;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, .6);
+      max-height: min(78vh, 900px);
+    }
+
+    .lb__frame video {
+      display: block;
+      max-height: min(78vh, 900px);
+      max-width: 100%;
+      width: auto;
+      background: #000
+    }
+
+    .lb__frame.is-empty video {
+      display: none
+    }
+
+    .lb__soon {
+      display: none;
+      width: min(78vw, 340px);
+      aspect-ratio: 9/16;
+      background: radial-gradient(90% 55% at 50% 0%, rgba(242, 131, 58, .18), transparent 70%), linear-gradient(155deg, #2A231E, #121614);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .lb__frame.is-empty .lb__soon {
+      display: flex
+    }
+
+    .lb__soon p {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      line-height: 1.3;
+      color: var(--bone-dim)
+    }
+
+    .lb__soon a {
+      font-family: var(--mono);
+      font-size: .62rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--sodium);
+      border-bottom: 1px solid var(--sodium);
+      padding-bottom: .25rem
+    }
+
+    .lb__meta {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      text-align: center
+    }
+
+    .lb__title {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: clamp(1.1rem, .9rem + .9vw, 1.7rem);
+      line-height: 1.1
+    }
+
+    .lb__kind {
+      font-family: var(--mono);
+      font-size: .6rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--ash)
+    }
+
+    .lb__bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: clamp(.9rem, 3vw, 2rem)
+    }
+
+    .lb__count {
+      font-family: var(--mono);
+      font-size: .62rem;
+      letter-spacing: .16em;
+      color: var(--ash);
+      font-variant-numeric: tabular-nums
+    }
+
+    .lbx {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--bone);
+      flex: none;
+      transition: background .35s var(--ease), color .35s var(--ease), border-color .35s var(--ease), transform .35s var(--ease);
+    }
+
+    .lbx:hover {
+      background: var(--sodium);
+      border-color: var(--sodium);
+      color: var(--ink)
+    }
+
+    .lbx svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.6
+    }
+
+    .lb__nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--bone);
+      background: rgba(12, 15, 14, .5);
+      backdrop-filter: blur(8px);
+      transition: background .35s var(--ease), color .35s var(--ease), border-color .35s var(--ease);
+    }
+
+    .lb__nav:hover {
+      background: var(--sodium);
+      border-color: var(--sodium);
+      color: var(--ink)
+    }
+
+    .lb__nav svg {
+      width: 17px;
+      height: 17px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.6
+    }
+
+    .lb__prev {
+      left: clamp(.5rem, 2vw, 2rem)
+    }
+
+    .lb__next {
+      right: clamp(.5rem, 2vw, 2rem)
+    }
+
+    /* on a phone the clip fills the width, so the arrows move below it
+   rather than sitting on top of the video and its controls */
+    @media(max-width:680px) {
+      .lb__nav {
+        width: 44px;
+        height: 44px;
+        top: auto;
+        transform: none;
+        bottom: calc(1rem + env(safe-area-inset-bottom, 0px))
+      }
+
+      .lb__prev {
+        left: calc(50% - 5.6rem)
+      }
+
+      .lb__next {
+        right: calc(50% - 5.6rem)
+      }
+
+      .lb__frame video {
+        max-height: min(60vh, 640px)
+      }
+
+      .lb__soon {
+        width: min(66vw, 280px)
+      }
+
+      .lb__stage {
+        padding-bottom: 5rem
+      }
+    }
+
+    /* shown only if the browser refuses sound on autoplay */
+    .lb__unmute {
+      position: absolute;
+      left: 50%;
+      bottom: 1rem;
+      transform: translateX(-50%);
+      display: none;
+      align-items: center;
+      gap: .5rem;
+      font-family: var(--mono);
+      font-size: .6rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      background: var(--sodium);
+      color: var(--ink);
+      padding: .6rem 1rem;
+    }
+
+    .lb__unmute.is-on {
+      display: flex
+    }
+
+    /* rows/tiles with nothing to play yet say so instead of opening an empty box */
+    .row[data-empty] .row__kind::after,
+    .gridfall a[data-empty] b::after {
+      content: " · clip soon";
+      color: var(--ash-dim)
+    }
+
+    /* ---------------- reveals ---------------- */
+    .rv {
+      opacity: 0;
+      transform: translateY(26px);
+      transition: opacity .95s var(--ease), transform .95s var(--ease)
+    }
+
+    .rv.on {
+      opacity: 1;
+      transform: none
+    }
+
+    .rv[data-d="1"] {
+      transition-delay: .08s
+    }
+
+    .rv[data-d="2"] {
+      transition-delay: .16s
+    }
+
+    .rv[data-d="3"] {
+      transition-delay: .24s
+    }
+
+    .rv[data-d="4"] {
+      transition-delay: .32s
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important
+      }
+
+      .rv {
+        opacity: 1;
+        transform: none
+      }
+
+      #grain,
+      #cur,
+      #curRing,
+      #peek {
+        display: none
+      }
+
+      .pfig img {
+        scale: 1
+      }
+    }
+  </style>
+</head>
+
+<body class="is-locked">
+
+  <canvas id="grain"></canvas>
+  <div id="loaderBar"></div>
+  <div id="loader">
+    <div class="lt">OZII</div>
+    <div class="lc" id="lcount">00</div>
+  </div>
+
+  <div id="cur"></div>
+  <div id="curRing"><span>View</span></div>
+
+  <div id="peek"></div>
+
+
+  <!-- ============ WORK LIGHTBOX ============ -->
+  <div id="lb" role="dialog" aria-modal="true" aria-label="Work preview" hidden>
+    <div class="lb__bar">
+      <span class="lb__count" id="lbCount">01 / 07</span>
+      <button class="lbx" id="lbClose" aria-label="Close preview">
+        <svg viewBox="0 0 24 24">
+          <path d="M5 5l14 14M19 5L5 19" />
+        </svg>
+      </button>
+    </div>
+    <button class="lb__nav lb__prev" id="lbPrev" aria-label="Previous project">
+      <svg viewBox="0 0 24 24">
+        <path d="M15 5l-7 7 7 7" />
+      </svg>
+    </button>
+    <button class="lb__nav lb__next" id="lbNext" aria-label="Next project">
+      <svg viewBox="0 0 24 24">
+        <path d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+    <div class="lb__stage">
+      <div class="lb__frame">
+        <video id="lbVideo" playsinline controls preload="metadata"></video>
+        <div class="lb__soon">
+          <p>This cut isn&rsquo;t up here yet.</p>
+          <a href="https://www.tiktok.com/@mynameisozii" target="_blank" rel="noopener">Watch on TikTok</a>
+        </div>
+        <button class="lb__unmute" id="lbUnmute">Tap for sound</button>
+      </div>
+      <div class="lb__meta">
+        <span class="lb__title" id="lbTitle"></span>
+        <span class="lb__kind" id="lbKind"></span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav" id="nav">
+    <a class="nav__mark" href="#top">OZII</a>
+    <div class="nav__set">
+      <a href="#work"><s>Work</s><s>Work</s></a>
+      <a href="#about"><s>About</s><s>About</s></a>
+      <a href="#rates"><s>Rates</s><s>Rates</s></a>
+      <a class="nav__cta" href="#contact"><s>Book me</s><s>Book me</s></a>
+    </div>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero wrap" id="top">
+    <div class="hero__top">
+      <div class="rec mono"><i></i><span>Rec &nbsp;·&nbsp; The GTA &nbsp;·&nbsp; Available for Collaborations</span>
+      </div>
+    </div>
+
+    <div class="mark">
+      <span class="mark__sub">Creativity &amp; the edit</span>
+      <h1 id="wordmark" aria-label="Ozii">OZII</h1>
+    </div>
+
+    <div class="hero__foot">
+      <p class="hero__claim rv">Fashion & Lifestyle storytelling for Social Media Platforms.
+        <b>Concepted, shot and cut by one person,</b> so the idea survives all the way to the export.
+      </p>
+      <div class="hero__nums rv" data-d="1">
+        <div class="hero__num"><b data-count="12.7" data-suffix="K">0</b><span class="mono">Followers</span></div>
+        <div class="hero__num"><b data-count="90" data-suffix="K">0</b><span class="mono">Weekly reach</span></div>
+        <div class="hero__num"><b data-count="18" data-suffix="%">0</b><span class="mono">Engagement</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ VELOCITY MARQUEE ============ -->
+  <div class="vband" aria-hidden="true">
+    <div class="vband__row" id="vrow">
+      <span>
+        <em>Fashion</em><i></i><em class="hollow">Editorial</em><i></i><em>Lifestyle</em><i></i>
+        <em class="hollow">Creative</em><i></i><em>Retention</em><i></i><em class="hollow">Unique</em><i></i>
+      </span>
+    </div>
+  </div>
+
+  <!-- ============ SELECTS ============ -->
+  <section class="section wrap" id="work">
+    <div class="sechead rv">
+      <span class="n">01</span>
+      <h2>Selected work</h2><span class="m">Click to play &mdash; sound on</span>
+    </div>
+
+    <!-- SWAP: give a row a real image by setting data-img="img/your-file.jpg" -->
+    <div class="index" id="index">
+      <a class="row" href="#work" data-video="video/clip-personal.mp4" data-img="img/preview-personal.webp"
+        data-initial="E">
+        <span class="row__fill"></span>
+        <span class="row__no">01</span>
+        <span class="row__name">Personal Projects</span>
+        <span class="row__kind">Concept · Direction · Edit</span>
+        <span class="row__yr">2026</span>
+      </a>
+      <a class="row" href="#work" data-video="video/clip-cote.mp4" data-img="img/preview-cote.webp" data-initial="C">
+        <span class="row__fill"></span>
+        <span class="row__no">02</span>
+        <span class="row__name">CÔTÉ</span>
+        <span class="row__kind">Brand film · Model</span>
+        <span class="row__yr">2026</span>
+      </a>
+      <a class="row" href="#work" data-video="video/clip-unsorted.mp4" data-img="img/preview-unsorted.webp"
+        data-initial="U">
+        <span class="row__fill"></span>
+        <span class="row__no">03</span>
+        <span class="row__name">Unsorted</span>
+        <span class="row__kind">Lookbook · Shoot &amp; cut</span>
+        <span class="row__yr">2026</span>
+      </a>
+      <a class="row" href="#work" data-img="img/preview-lensmart.webp" data-initial="L">
+        <span class="row__fill"></span>
+        <span class="row__no">04</span>
+        <span class="row__name">Lensmart</span>
+        <span class="row__kind">Product · UGC</span>
+        <span class="row__yr">2025</span>
+      </a>
+      <a class="row" href="#work" data-video="video/clip-sathrift.mp4" data-img="img/preview-sathrift.webp"
+        data-initial="S">
+        <span class="row__fill"></span>
+        <span class="row__no">05</span>
+        <span class="row__name">Salvation Army Thrift Store</span>
+        <span class="row__kind">Thrift styling · Series</span>
+        <span class="row__yr">2025</span>
+      </a>
+
+      <a class="row" href="#work" data-video="video/clip-afrobass.mp4" data-img="img/preview-afrobass.webp"
+        data-initial="A">
+        <span class="row__fill"></span>
+        <span class="row__no">07</span>
+        <span class="row__name">Afrobass</span>
+        <span class="row__kind">Event promo · Hype edits</span>
+        <span class="row__yr">2026</span>
+      </a>
+    </div>
+
+    <!-- touch devices get a grid, since there's no hover to reveal with -->
+    <div class="gridfall">
+      <a href="#work" data-video="video/sample.mp4"><img src="img/ozii-editorial.webp"
+          alt="Editorial series"><b>Editorial series</b></a>
+      <a href="#work" data-empty><span class="plate">C</span><b>CÔTÉ</b></a>
+      <a href="#work" data-empty><span class="plate">U</span><b>Unsorted</b></a>
+      <a href="#work" data-empty><span class="plate">L</span><b>Lensmart</b></a>
+      <a href="#work" data-empty><span class="plate">S</span><b>Salvation Army</b></a>
+      <a href="#work" data-empty><span class="plate">A</span><b>Afrobass</b></a>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section class="section wrap" id="about">
+    <div class="sechead rv"><span class="n">02</span>
+      <h2>Profile</h2><span class="m">Toronto · GTA</span>
+    </div>
+
+    <div class="split">
+      <figure class="pfig rv">
+        <img src="img/ozii-portrait.webp" alt="Portrait of Ozii" data-par="0.14">
+      </figure>
+      <div>
+        <p class="big" data-lines>Most creators hand a brand footage. I hand them <em>the finished idea.</em></p>
+        <div class="prose rv" data-d="1">
+          <p>I'm Ozii, a Toronto-based fashion and lifestyle creator specialising in meaningful
+            storytelling and editorial content for social media platforms. I came up through fashion,
+            but I approach content the way an editor does: hooks, pacing, and a cut that earns the
+            next three seconds.</p>
+          <p>Because I shoot and edit everything myself, a brief doesn't get diluted passing between
+            hands. Concept, direction, filming, color and the final export all sit with one person,
+            which usually means fewer rounds, faster turnaround, and work that looks like what we
+            actually talked about.</p>
+          <p>My audience skews 18–34 and sits mostly in Canada and Nigeria. It's a small, attentive room
+            rather than a big indifferent one.</p>
+        </div>
+
+        <div class="caps rv" data-d="2">
+          <div class="capr"><span class="mono">01</span>
+            <div><b>Concept &amp; direction</b>
+              <p>Ideas built around a brand, not bolted onto it — including multiple hook variants per shoot.</p>
+            </div>
+          </div>
+          <div class="capr"><span class="mono">02</span>
+            <div><b>Shooting</b>
+              <p>Menswear and lifestyle, on location or clean studio setups. 4K, framed for vertical delivery.</p>
+            </div>
+          </div>
+          <div class="capr"><span class="mono">03</span>
+            <div><b>Editing &amp; color</b>
+              <p>DaVinci Resolve. Retention-first cutting, recaps, highlights, community stories.</p>
+            </div>
+          </div>
+          <div class="capr"><span class="mono">04</span>
+            <div><b>UGC &amp; licensed content</b>
+              <p>Brand-owned video with no posting required, licensed for paid use.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="numbers rv">
+      <div class="num"><b data-count="12.7" data-suffix="K">0</b><span class="mono">Followers</span></div>
+      <div class="num"><b data-count="46" data-suffix="%">0</b><span class="mono">Canadian audience</span></div>
+      <div class="num"><b data-count="18" data-suffix="%">0</b><span class="mono">Engagement rate</span></div>
+      <div class="num"><b data-count="90" data-suffix="K">0</b><span class="mono">Weekly reach</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CLIENT BELT ============ -->
+  <div class="belt" aria-label="Brands worked with">
+    <div class="belt__row" id="beltrow">
+      <span>
+        <img src="img/logo-cote.webp" alt="CÔTÉ">
+        <img src="img/logo-unsorted.webp" alt="Unsorted">
+        <img src="img/logo-lensmart.webp" alt="Lensmart">
+        <img src="img/logo-firm.webp" alt="Firm">
+        <div class="sa"><u>SALVATION<br>ARMY</u><i></i><s>THRIFT STORE</s></div>
+      </span>
+    </div>
+  </div>
+
+  <!-- ============ RATES (light flip) ============ -->
+  <section class="section light" id="rates">
+    <div class="wrap">
+      <div class="sechead rv"><span class="n">03</span>
+        <h2>Rates</h2><span class="m">CAD · From</span>
+      </div>
+
+      <div class="plans">
+        <div class="plan rv">
+          <span class="plan__no">01</span>
+          <div>
+            <h3 class="plan__name">Starter</h3>
+            <ul class="plan__list">
+              <li>1 TikTok / Reel video</li>
+              <li>2 Instagram stories</li>
+              <li>Organic usage, 30 days</li>
+            </ul>
+          </div>
+          <span class="plan__price">$500</span>
+        </div>
+
+        <div class="plan rv" data-d="1">
+          <span class="plan__no">02</span>
+          <div>
+            <h3 class="plan__name">Signature</h3>
+            <ul class="plan__list">
+              <li>2 videos (TikTok + Reel)</li>
+              <li>2 feed posts</li>
+              <li>3 stories</li>
+              <li>Organic usage, 60 days</li>
+            </ul>
+          </div>
+          <span class="plan__price">$950</span>
+        </div>
+
+        <div class="plan rv" data-d="2">
+          <span class="plan__no">03</span>
+          <div>
+            <h3 class="plan__name">UGC &amp; licensed video</h3>
+            <ul class="plan__list">
+              <li>1 custom UGC video</li>
+              <li>Concept, filming &amp; edit</li>
+              <li>12-month paid usage rights</li>
+              <li>2 rounds of revisions</li>
+            </ul>
+          </div>
+          <span class="plan__price">$750</span>
+        </div>
+
+        <div class="plan rv" data-d="3">
+          <span class="plan__no">04</span>
+          <div>
+            <h3 class="plan__name">Freelance editing</h3>
+            <ul class="plan__list">
+              <li>Resolve / Premiere</li>
+              <li>Recaps &amp; highlights</li>
+              <li>Retention-first cutting</li>
+              <li>Filming add-on $40–45/hr</li>
+            </ul>
+          </div>
+          <span class="plan__price">$35<span style="font-size:.5em">/hr</span></span>
+        </div>
+      </div>
+
+      <div class="foot2 rv">
+        <a class="pill" href="Ozii_Rate_Card.pdf" download>Download the rate card</a>
+        <span class="note">Bundles and retainers quoted on request</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="section wrap" id="contact">
+    <div class="sechead rv"><span class="n">04</span>
+      <h2>Start a project</h2><span class="m">Replies within 24h</span>
+    </div>
+
+    <p class="shout" data-lines>Let's make<br><span class="out">something</span> good</p>
+
+    <div class="cgrid">
+      <div class="rv">
+        <div class="direct">
+          <a href="mailto:oziifromthe6ix.creates@gmail.com"><span
+              class="k">Email</span><span>oziifromthe6ix.creates@gmail.com</span></a>
+          <a href="https://www.tiktok.com/@mynameisozii" target="_blank" rel="noopener"><span
+              class="k">TikTok</span><span>Explore my TikTok</span></a>
+          <a href="https://www.instagram.com/oziigram._/" target="_blank" rel="noopener"><span
+              class="k">Instagram</span><span>Explore my Instagram</span></a>
+          <p><span class="k">Based in</span><span>Toronto, ON</span></p>
+        </div>
+      </div>
+
+      <form id="brief" class="rv" data-d="1" novalidate>
+        <div class="r2">
+          <div class="f"><label for="n">Your name</label><input id="n" name="name" type="text"
+              placeholder="First and last" required></div>
+          <div class="f"><label for="b">Brand</label><input id="b" name="brand" type="text" placeholder="Optional">
+          </div>
+        </div>
+        <div class="r2">
+          <div class="f"><label for="e">Email</label><input id="e" name="email" type="email"
+              placeholder="you@company.com" required></div>
+          <div class="f"><label for="bu">Budget</label>
+            <select id="bu" name="budget">
+              <option>Not sure yet</option>
+              <option>Under $500</option>
+              <option>$500 – $1,000</option>
+              <option>$1,000 – $2,500</option>
+              <option>$2,500+</option>
+            </select>
+          </div>
+        </div>
+        <div class="f"><label for="m">What are you working on?</label><textarea id="m" name="message"
+            placeholder="Deliverables, timeline, where it will run." required></textarea></div>
+        <span class="magnet" id="magnet"><button type="submit">Send the brief</button></span>
+        <p class="fnote" id="fnote">Opens in your mail app, pre-filled and ready to send.</p>
+      </form>
+    </div>
+  </section>
+
+  <footer class="wrap">
+    <div class="foot">
+      <span class="mono">© <span id="yr">2026</span> Ozii · Toronto</span>
+      <div class="foot__s">
+        <a class="mono" href="https://www.tiktok.com/@mynameisozii" target="_blank" rel="noopener">TikTok</a>
+        <a class="mono" href="https://www.instagram.com/oziigram._/" target="_blank" rel="noopener">Instagram</a>
+        <a class="mono" href="mailto:oziifromthe6ix.creates@gmail.com">Email</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+      var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var touch = matchMedia("(hover: none), (pointer: coarse)").matches;
+      var lerp = function (a, b, t) { return a + (b - a) * t; };
+
+      document.getElementById("yr").textContent = new Date().getFullYear();
+
+      /* ---------------------------------------------------------------
+         1. LOADER — counts to 100, then the curtain lifts
+         --------------------------------------------------------------- */
+      var loader = document.getElementById("loader"),
+        lbar = document.getElementById("loaderBar"),
+        lcount = document.getElementById("lcount");
+
+      function bootDone() {
+        document.body.classList.remove("is-locked");
+        loader.classList.add("is-done");
+        lbar.classList.add("is-done");
+        playHero();
+      }
+
+      if (reduce) {
+        loader.style.display = "none"; lbar.style.display = "none";
+        document.body.classList.remove("is-locked");
+        requestAnimationFrame(playHero);
+      } else {
+        var pct = 0;
+        var tick = setInterval(function () {
+          pct = Math.min(100, pct + Math.random() * 13 + 5);
+          lcount.textContent = pct < 100 ? String(Math.floor(pct)).padStart(2, "0") : "100";
+          lbar.style.width = pct + "%";
+          if (pct >= 100) { clearInterval(tick); setTimeout(bootDone, 380); }
+        }, 110);
+      }
+
+      /* ---------------------------------------------------------------
+         2. HERO — wordmark letters swing up from their masks
+         --------------------------------------------------------------- */
+      var wm = document.getElementById("wordmark");
+      (function buildMark() {
+        var letters = wm.textContent.trim().split("");
+        wm.textContent = "";
+        letters.forEach(function (c) {
+          var mask = document.createElement("span"); mask.className = "ch";
+          var inner = document.createElement("b"); inner.textContent = c;
+          if (!reduce) { inner.style.transform = "translateY(105%)"; }
+          mask.appendChild(inner); wm.appendChild(mask);
+        });
+      })();
+
+      /* The wordmark should span the column edge to edge whichever face actually
+         loads, so measure it and solve for the size rather than guessing in vw. */
+      var markWrap = wm.parentElement;
+      function fitMark() {
+        var box = markWrap.clientWidth;
+        if (!box) return;
+        /* scrollWidth floors at the container width, so measure the letters
+           against max-content and restore afterwards */
+        wm.style.width = "max-content";
+        wm.style.fontSize = "100px";
+        var natural = wm.offsetWidth;
+        wm.style.width = "";
+        if (!natural) return;
+        wm.style.fontSize = Math.max(56, Math.min(100 * (box / natural), 640)) + "px";
+      }
+      fitMark();
+      addEventListener("resize", fitMark);
+      if (document.fonts && document.fonts.ready) { document.fonts.ready.then(fitMark); }
+
+      function playHero() {
+        if (reduce) return;
+        wm.querySelectorAll(".ch b").forEach(function (b, i) {
+          b.style.transition = "transform 1.05s var(--ease) " + (i * 0.075) + "s";
+          b.style.transform = "translateY(0)";
+        });
+      }
+
+      /* ---------------------------------------------------------------
+         3. CUSTOM CURSOR — trailing ring that swells over work rows
+         --------------------------------------------------------------- */
+      if (!touch && !reduce) {
+        var dot = document.getElementById("cur"), ring = document.getElementById("curRing");
+        var mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+        addEventListener("mousemove", function (e) { mx = e.clientX; my = e.clientY; }, { passive: true });
+        (function curLoop() {
+          rx = lerp(rx, mx, 0.16); ry = lerp(ry, my, 0.16);
+          dot.style.transform = "translate3d(" + mx + "px," + my + "px,0)";
+          ring.style.transform = "translate3d(" + rx + "px," + ry + "px,0)";
+          requestAnimationFrame(curLoop);
+        })();
+        document.querySelectorAll(".row, .gridfall a, .magnet, .pill").forEach(function (el) {
+          el.addEventListener("mouseenter", function () { document.body.classList.add("cur-lg"); });
+          el.addEventListener("mouseleave", function () { document.body.classList.remove("cur-lg"); });
+        });
+      }
+
+      /* ---------------------------------------------------------------
+         4. WORK INDEX — a preview plate chases the cursor on hover
+         --------------------------------------------------------------- */
+      if (!touch && !reduce) {
+        var peek = document.getElementById("peek");
+        var rows = Array.prototype.slice.call(document.querySelectorAll("#index .row"));
+
+        rows.forEach(function (row) {
+          var pk = document.createElement("div"); pk.className = "pk";
+          var src = row.getAttribute("data-img");
+          if (src) {
+            /* the plate shows immediately; the photo is only fetched the first
+               time this row is hovered, so opening the page costs nothing */
+            var pl = document.createElement("span");
+            pl.className = "plate"; pl.textContent = row.getAttribute("data-initial") || "";
+            pk.appendChild(pl);
+            row._loadImg = function () {
+              if (row._imgDone) return;
+              row._imgDone = true;
+              var im = document.createElement("img");
+              im.alt = ""; im.decoding = "async";
+              im.addEventListener("load", function () { pl.style.display = "none"; });
+              im.src = src;
+              pk.appendChild(im);
+            };
+          } else {
+            var pl2 = document.createElement("span");
+            pl2.className = "plate"; pl2.textContent = row.getAttribute("data-initial") || "";
+            pk.appendChild(pl2);
+          }
+          peek.appendChild(pk);
+          row._pk = pk;
+        });
+
+        var px = 0, py = 0, tx = 0, ty = 0, tilt = 0, lastX = 0, live = false;
+        rows.forEach(function (row) {
+          row.addEventListener("mouseenter", function () {
+            live = true; peek.classList.add("is-on");
+            if (row._loadImg) row._loadImg();
+            rows.forEach(function (r) { r._pk.classList.toggle("is-on", r === row); });
+          });
+          row.addEventListener("mouseleave", function () {
+            live = false; peek.classList.remove("is-on");
+          });
+        });
+        addEventListener("mousemove", function (e) { tx = e.clientX; ty = e.clientY; }, { passive: true });
+
+        (function peekLoop() {
+          px = lerp(px, tx, 0.11); py = lerp(py, ty, 0.11);
+          var vx = px - lastX; lastX = px;
+          tilt = lerp(tilt, Math.max(-14, Math.min(14, vx * 0.7)), 0.1);
+          var s = live ? 1 : 0.9;
+          peek.style.transform = "translate3d(" + (px + 34) + "px," + (py - 150) + "px,0) scale(" + s + ") rotate(" + tilt + "deg)";
+          requestAnimationFrame(peekLoop);
+        })();
+      }
+
+
+      /* ---------------------------------------------------------------
+         4b. WORK LIGHTBOX — click plays the cut, with sound
+         A click is a user gesture, so browsers allow unmuted playback.
+         If one refuses anyway, fall back to muted and offer a sound button.
+         --------------------------------------------------------------- */
+      (function () {
+        var lb = document.getElementById("lb"),
+          vid = document.getElementById("lbVideo"),
+          elTitle = document.getElementById("lbTitle"),
+          elKind = document.getElementById("lbKind"),
+          elCount = document.getElementById("lbCount"),
+          btnX = document.getElementById("lbClose"),
+          btnPrev = document.getElementById("lbPrev"),
+          btnNext = document.getElementById("lbNext"),
+          btnSnd = document.getElementById("lbUnmute");
+        if (!lb) return;
+        lb.hidden = false;
+
+        /* one ordered list of everything playable, from whichever layout is live */
+        var items = [];
+        document.querySelectorAll("#index .row").forEach(function (el) {
+          items.push({
+            el: el,
+            src: el.getAttribute("data-video") || "",
+            title: (el.querySelector(".row__name") || {}).textContent || "",
+            kind: (el.querySelector(".row__kind") || {}).textContent || ""
+          });
+        });
+
+        var idx = 0, lastFocus = null;
+
+        function label(i) {
+          return String(i + 1).padStart(2, "0") + " / " + String(items.length).padStart(2, "0");
+        }
+
+        function load(i) {
+          idx = (i + items.length) % items.length;
+          var it = items[idx];
+          elTitle.textContent = it.title;
+          elKind.textContent = it.kind;
+          elCount.textContent = label(idx);
+          btnSnd.classList.remove("is-on");
+
+          var frame = vid.parentElement;
+          if (!it.src) {
+            vid.pause(); vid.removeAttribute("src"); vid.load();
+            frame.classList.add("is-empty");
+            return;
+          }
+          frame.classList.remove("is-empty");
+          vid.src = it.src;
+          vid.muted = false;
+          vid.volume = 1;
+          vid.currentTime = 0;
+          var tryPlay = vid.play();
+          if (tryPlay && tryPlay.catch) {
+            tryPlay.catch(function () {
+              /* browser blocked audio — play silently and let them switch it on */
+              vid.muted = true;
+              vid.play().catch(function () { });
+              btnSnd.classList.add("is-on");
+            });
+          }
+        }
+
+        function open(i) {
+          lastFocus = document.activeElement;
+          load(i);
+          lb.classList.add("is-open");
+          document.body.classList.add("is-locked");
+          document.body.classList.remove("cur-lg");
+          btnX.focus();
+        }
+
+        function close() {
+          lb.classList.remove("is-open");
+          document.body.classList.remove("is-locked");
+          vid.pause();
+          vid.removeAttribute("src");
+          vid.load();
+          if (lastFocus && lastFocus.focus) lastFocus.focus();
+        }
+
+        items.forEach(function (it, i) {
+          it.el.addEventListener("click", function (ev) { ev.preventDefault(); open(i); });
+        });
+
+        /* the touch grid opens the same player */
+        document.querySelectorAll(".gridfall a").forEach(function (a, i) {
+          a.addEventListener("click", function (ev) { ev.preventDefault(); open(i); });
+        });
+
+        btnX.addEventListener("click", close);
+        btnPrev.addEventListener("click", function () { load(idx - 1); });
+        btnNext.addEventListener("click", function () { load(idx + 1); });
+        btnSnd.addEventListener("click", function () {
+          vid.muted = false; vid.volume = 1;
+          vid.play().catch(function () { });
+          btnSnd.classList.remove("is-on");
+        });
+        lb.addEventListener("click", function (ev) { if (ev.target === lb) close(); });
+
+        document.addEventListener("keydown", function (ev) {
+          if (!lb.classList.contains("is-open")) return;
+          if (ev.key === "Escape") { close(); }
+          else if (ev.key === "ArrowLeft") { load(idx - 1); }
+          else if (ev.key === "ArrowRight") { load(idx + 1); }
+        });
+      })();
+
+      /* ---------------------------------------------------------------
+         5. SCROLL REVEALS + line-masked headlines
+         --------------------------------------------------------------- */
+      document.querySelectorAll("[data-lines]").forEach(function (el) {
+        if (reduce) return;
+        // wrap each rendered line in a mask so it can swing up independently
+        var html = el.innerHTML;
+        var words = html.split(/(<br\s*\/?>)/i);
+        el.innerHTML = "";
+        var buf = "";
+        words.forEach(function (chunk) {
+          if (/<br/i.test(chunk)) { pushLine(buf); buf = ""; }
+          else buf += chunk;
+        });
+        pushLine(buf);
+        function pushLine(t) {
+          if (!t.trim()) return;
+          var ln = document.createElement("span"); ln.className = "ln";
+          var inner = document.createElement("span"); inner.innerHTML = t;
+          inner.style.transform = "translateY(103%)";
+          ln.appendChild(inner); el.appendChild(ln);
+        }
+      });
+
+      var revealIO = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          if (e.target.hasAttribute("data-lines")) {
+            e.target.querySelectorAll(".ln > span").forEach(function (s, i) {
+              s.style.transition = "transform 1.05s var(--ease) " + (i * 0.11) + "s";
+              s.style.transform = "translateY(0)";
+            });
+          } else {
+            e.target.classList.add("on");
+          }
+          revealIO.unobserve(e.target);
+        });
+      }, { threshold: .14, rootMargin: "0px 0px -6% 0px" });
+      document.querySelectorAll(".rv, [data-lines]").forEach(function (el) { revealIO.observe(el); });
+
+      /* ---------------------------------------------------------------
+         6. COUNT-UPS
+         --------------------------------------------------------------- */
+      var countIO = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          var el = e.target, target = parseFloat(el.dataset.count), sfx = el.dataset.suffix || "";
+          var dec = (String(target).split(".")[1] || "").length;
+          if (reduce) { el.textContent = target.toFixed(dec) + sfx; countIO.unobserve(el); return; }
+          var t0 = null;
+          (function step(t) {
+            if (t0 === null) t0 = t;
+            var p = Math.min((t - t0) / 1500, 1), e2 = 1 - Math.pow(1 - p, 3);
+            el.textContent = (target * e2).toFixed(dec) + sfx;
+            if (p < 1) requestAnimationFrame(step);
+          })(performance.now());
+          countIO.unobserve(el);
+        });
+      }, { threshold: .6 });
+      document.querySelectorAll("[data-count]").forEach(function (el) { countIO.observe(el); });
+
+      /* ---------------------------------------------------------------
+         7. SCROLL ENGINE — marquee velocity, parallax, sticky nav
+         --------------------------------------------------------------- */
+      var nav = document.getElementById("nav");
+      var vrow = document.getElementById("vrow"), beltrow = document.getElementById("beltrow");
+
+      /* duplicate marquee content until it comfortably overflows, so the
+         loop is seamless at any viewport width */
+      [vrow, beltrow].forEach(function (row) {
+        if (!row) return;
+        var unit = row.firstElementChild;
+        var need = Math.ceil((innerWidth * 2) / Math.max(unit.offsetWidth, 1)) + 1;
+        for (var i = 0; i < need; i++) row.appendChild(unit.cloneNode(true));
+        row._unit = unit.offsetWidth;
+      });
+
+      var vOff = 0, bOff = 0, lastY = scrollY, vel = 0, parallax = [];
+      document.querySelectorAll("[data-par]").forEach(function (el) {
+        parallax.push({ el: el, amt: parseFloat(el.getAttribute("data-par")) });
+      });
+
+      (function frame() {
+        var y = scrollY;
+        vel = lerp(vel, y - lastY, 0.12);
+        lastY = y;
+
+        nav.classList.toggle("is-stuck", y > 40);
+
+        if (!reduce) {
+          /* base drift plus a kick from scroll velocity, opposite directions */
+          vOff -= 0.85 + vel * 0.45;
+          bOff += 0.55 + vel * 0.28;
+          if (vrow._unit) { vOff = vOff % vrow._unit; vrow.style.transform = "translate3d(" + vOff + "px,0,0)"; }
+          if (beltrow._unit) { bOff = bOff % beltrow._unit; beltrow.style.transform = "translate3d(" + (bOff - beltrow._unit) + "px,0,0)"; }
+
+          parallax.forEach(function (p) {
+            var r = p.el.parentElement.getBoundingClientRect();
+            if (r.bottom < -200 || r.top > innerHeight + 200) return;
+            var mid = (r.top + r.height / 2 - innerHeight / 2) / innerHeight;
+            p.el.style.transform = "translate3d(0," + (mid * p.amt * 100 * -1) + "px,0)";
+          });
+        }
+        requestAnimationFrame(frame);
+      })();
+
+      /* the cursor has to stay visible when the page flips to bone */
+      (function () {
+        var light = document.querySelector(".light");
+        if (!light || touch) return;
+        new IntersectionObserver(function (es) {
+          es.forEach(function (e) {
+            document.body.classList.toggle("on-light",
+              e.isIntersecting && e.intersectionRatio > 0.42);
+          });
+        }, { threshold: [0, .42, .75] }).observe(light);
+      })();
+
+      /* ---------------------------------------------------------------
+         8. MAGNETIC BUTTON
+         --------------------------------------------------------------- */
+      if (!touch && !reduce) {
+        var mag = document.getElementById("magnet");
+        mag.addEventListener("mousemove", function (e) {
+          var r = this.getBoundingClientRect();
+          var dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+          this.style.transform = "translate3d(" + (dx * 0.28) + "px," + (dy * 0.4) + "px,0)";
+        });
+        mag.addEventListener("mouseleave", function () {
+          this.style.transition = "transform .55s var(--ease)";
+          this.style.transform = "translate3d(0,0,0)";
+          var self = this; setTimeout(function () { self.style.transition = ""; }, 560);
+        });
+      }
+
+      /* ---------------------------------------------------------------
+         9. GRAIN
+         --------------------------------------------------------------- */
+      if (!reduce) {
+        var gc = document.getElementById("grain"), gx = gc.getContext("2d", { alpha: true });
+        function sizeGrain() { gc.width = Math.ceil(innerWidth / 2); gc.height = Math.ceil(innerHeight / 2); }
+        sizeGrain(); addEventListener("resize", sizeGrain);
+        var gframe = 0;
+        (function grainLoop() {
+          if (++gframe % 3 === 0) {
+            var d = gx.createImageData(gc.width, gc.height), p = d.data;
+            for (var i = 0; i < p.length; i += 4) {
+              var v = (Math.random() * 255) | 0;
+              p[i] = p[i + 1] = p[i + 2] = v; p[i + 3] = 255;
+            }
+            gx.putImageData(d, 0, 0);
+          }
+          requestAnimationFrame(grainLoop);
+        })();
+      }
+
+      /* ---------------------------------------------------------------
+         10. BRIEF FORM -> pre-filled email
+         --------------------------------------------------------------- */
+      var form = document.getElementById("brief"), fnote = document.getElementById("fnote");
+      form.addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        var d = new FormData(form);
+        var name = (d.get("name") || "").toString().trim(),
+          mail = (d.get("email") || "").toString().trim(),
+          msg = (d.get("message") || "").toString().trim();
+        if (!name || !mail || !msg) {
+          fnote.textContent = "Add your name, email and a short brief, then send.";
+          fnote.style.color = "var(--sodium)"; return;
+        }
+        var body = "Name: " + name + "\nBrand: " + (d.get("brand") || "—") + "\nEmail: " + mail +
+          "\nBudget: " + (d.get("budget") || "—") + "\n\nBrief:\n" + msg + "\n";
+        location.href = "mailto:oziifromthe6ix.creates@gmail.com?subject="
+          + encodeURIComponent("Project enquiry — " + (d.get("brand") || name))
+          + "&body=" + encodeURIComponent(body);
+        fnote.textContent = "Opening your mail app — hit send and it's with me.";
+        fnote.style.color = "var(--ash)";
+      });
+
+      /* smooth in-page scrolling that doesn't fight the rAF loop */
+      document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+        a.addEventListener("click", function (e) {
+          var t = document.querySelector(this.getAttribute("href"));
+          if (!t) return;
+          e.preventDefault();
+          t.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+        });
+      });
+    })();
+  </script>
+</body>
+
+</html>

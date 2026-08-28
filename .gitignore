@@ -1,0 +1,28 @@
+# ── macOS ───────────────────────────────────────────────────────────
+.DS_Store
+._*
+
+# ── Media: ship only the web-optimised versions ─────────────────────
+# The originals (4K exports, Insta downloads, raw screenshots) stay on
+# your Mac. They total ~167 MB and git would keep them FOREVER, even
+# after deletion — so they never get committed in the first place.
+#
+# This works as an allow-list: everything in img/ and video/ is
+# ignored, then the optimised files are added back.
+#
+# ⚠️  IMPORTANT: a new image must be named  preview-*.webp
+#     and a new clip must be named  clip-*.mp4
+#     or git will silently skip it and the live site will 404.
+
+img/*
+!img/logo-*.webp
+!img/ozii-*.webp
+!img/preview-*.webp
+
+video/*
+!video/clip-*.mp4
+
+# ── Editor / tooling ────────────────────────────────────────────────
+.vscode/
+node_modules/
+*.log
