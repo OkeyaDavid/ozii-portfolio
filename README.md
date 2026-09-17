@@ -21,7 +21,7 @@ chases the cursor with easing and tilts based on pointer velocity. Clicking
 opens a full-screen player with audio.
 
 **Audio that actually plays.** Browsers block unmuted autoplay, so playback is
-started from the click itself — which counts as a user gesture. If a browser
+started from the click itself, which counts as a user gesture. If a browser
 refuses anyway, it falls back to muted and surfaces an unmute control rather
 than playing silently.
 
@@ -82,7 +82,7 @@ Ozii_Rate_Card.pdf    downloadable rate card
 No build step — open `index.html` in a browser.
 
 For live reload while editing, use the **Live Server** extension in VS Code
-(right-click `index.html` → "Open with Live Server").
+(right-click `index.html` : "Open with Live Server").
 
 ## Adding a project
 
@@ -91,7 +91,7 @@ For live reload while editing, use the **Live Server** extension in VS Code
 3. On that row in the SELECTED WORK section, set `data-video` and `data-img`,
    and remove `data-empty`
 
-The filename prefixes matter — `.gitignore` uses them to decide what ships.
+The filename prefixes matter: `.gitignore` uses them to decide what ships.
 
 ## Deploying
 
