@@ -14,12 +14,12 @@
 #     and a new clip must be named  clip-*.mp4
 #     or git will silently skip it and the live site will 404.
 
-img/*
+
 !img/logo-*.webp
 !img/ozii-*.webp
 !img/preview-*.webp
 
-video/*
+
 !video/clip-*.mp4
 
 # ── Editor / tooling ────────────────────────────────────────────────
